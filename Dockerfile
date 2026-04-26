@@ -1,13 +1,15 @@
 # Build stage
-FROM gradle:7.5-jdk17 AS build
+FROM eclipse-temurin:17-jdk-jammy AS build
 WORKDIR /home/gradle/src
-COPY --chown=gradle:gradle build.gradle settings.gradle ./
-COPY --chown=gradle:gradle src ./src
-RUN gradle clean build --no-daemon
+# Copy toàn bộ dự án để đảm bảo có đủ file cấu hình wrapper
+COPY . .
+# Cấp quyền cho gradlew và build
+RUN chmod +x gradlew && ./gradlew clean build --no-daemon
 
 # Run stage
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
+# Copy file .jar (lưu ý: kiểm tra tên file, nếu có version thì dùng *.jar)
 COPY --from=build /home/gradle/src/build/libs/*.jar app.jar
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
