@@ -1,8 +1,9 @@
 # Build stage
 FROM gradle:7.5-jdk17 AS build
-COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
-RUN gradle clean build --no-daemon -x test
+COPY --chown=gradle:gradle build.gradle settings.gradle ./
+COPY --chown=gradle:gradle src ./src
+RUN gradle clean build --no-daemon
 
 # Run stage
 FROM eclipse-temurin:17-jdk-jammy
