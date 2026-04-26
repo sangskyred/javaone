@@ -1,6 +1,6 @@
 # Build stage
-# Sử dụng OpenJDK 25 cho quá trình biên dịch
-FROM openjdk:25-jdk-slim AS build
+# Sử dụng OpenJDK 21 cho quá trình biên dịch
+FROM openjdk:21-jdk-slim AS build
 WORKDIR /home/gradle/src
 
 # Copy toàn bộ dự án
@@ -10,8 +10,8 @@ COPY . .
 RUN chmod +x gradlew && ./gradlew clean build --no-daemon
 
 # Run stage
-# Sử dụng JRE 25 để chạy ứng dụng (dùng bản slim để giảm dung lượng image)
-FROM openjdk:25-jdk-slim 
+# Sử dụng JRE 21 để chạy ứng dụng (dùng bản slim để giảm dung lượng image)
+FROM openjdk:21-jdk-slim 
 WORKDIR /app
 
 # Copy file .jar từ build stage
