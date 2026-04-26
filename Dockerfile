@@ -2,10 +2,10 @@
 FROM gradle:7.5-jdk17 AS build
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
-RUN gradle build --no-daemon
+RUN gradle clean build --no-daemon
 
 # Run stage
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 COPY --from=build /home/gradle/src/build/libs/*.jar app.jar
 EXPOSE 8080
