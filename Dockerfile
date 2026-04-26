@@ -1,6 +1,5 @@
 # Build stage
-# Sử dụng OpenJDK 21 cho quá trình biên dịch
-FROM openjdk:21-jdk-slim AS build
+FROM eclipse-temurin:21-jdk-jammy AS build
 WORKDIR /home/gradle/src
 
 # Copy toàn bộ dự án
@@ -10,8 +9,7 @@ COPY . .
 RUN chmod +x gradlew && ./gradlew clean build --no-daemon
 
 # Run stage
-# Sử dụng JRE 21 để chạy ứng dụng (dùng bản slim để giảm dung lượng image)
-FROM openjdk:21-jdk-slim 
+FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
 
 # Copy file .jar từ build stage
