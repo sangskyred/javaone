@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.repository.CartRepository">
+    <select id="findByUserId" parameterType="long" resultType="com.example.ecommerce.entity.CartLine">
+        SELECT c.product_id, p.name AS product_name, p.price AS unit_price, c.quantity,
+               p.price * c.quantity AS line_total
+        FROM cart_items c
+        JOIN products p ON p.id = c.product_id
+        WHERE c.user_id = #{userId}
+        ORDER BY c.id
+    </select>
+
+    <select id="findQuantity" resultType="int">
+        SELECT quantity FROM cart_items WHERE user_id = #{userId} AND product_id = #{productId}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO cart_items (user_id, product_id, quantity)
+        VALUES (#{userId}, #{productId}, #{quantity})
+    </insert>
+
+    <update id="updateQuantity">
+        UPDATE cart_items
+        SET quantity = #{quantity}
+        WHERE user_id = #{userId} AND product_id = #{productId}
+    </update>
+
+    <delete id="deleteItem">
+        DELETE FROM cart_items WHERE user_id = #{userId} AND product_id = #{productId}
+    </delete>
+
+    <delete id="clear" parameterType="long">
+        DELETE FROM cart_items WHERE user_id = #{userId}
+    </delete>
+</mapper>
