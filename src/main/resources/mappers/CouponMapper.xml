@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.repository.CouponRepository">
+    <resultMap id="CouponMap" type="com.example.ecommerce.entity.Coupon">
+        <id property="id" column="id"/><result property="code" column="code"/><result property="discountType" column="discount_type"/>
+        <result property="discountValue" column="discount_value"/><result property="maxUses" column="max_uses"/><result property="usedCount" column="used_count"/>
+        <result property="minOrderAmount" column="min_order_amount"/><result property="startsAt" column="starts_at"/><result property="expiresAt" column="expires_at"/>
+        <result property="active" column="is_active"/><result property="createdAt" column="created_at"/> 
+    </resultMap>
+    <select id="findAll" resultMap="CouponMap">SELECT * FROM coupons ORDER BY id DESC</select>
+    <select id="findById" resultMap="CouponMap">SELECT * FROM coupons WHERE id = #{id}</select>
+    <select id="findByCode" resultMap="CouponMap">SELECT * FROM coupons WHERE UPPER(code) = UPPER(#{code})</select>
+    <insert id="insert" parameterType="com.example.ecommerce.entity.Coupon" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO coupons(code, discount_type, discount_value, max_uses, used_count, min_order_amount, starts_at, expires_at, is_active)
+        VALUES(#{code}, #{discountType}, #{discountValue}, #{maxUses}, #{usedCount}, #{minOrderAmount}, #{startsAt}, #{expiresAt}, #{active})
+    </insert>
+    <update id="update" parameterType="com.example.ecommerce.entity.Coupon">
+        UPDATE coupons SET code=#{code}, discount_type=#{discountType}, discount_value=#{discountValue}, max_uses=#{maxUses},
+        min_order_amount=#{minOrderAmount}, starts_at=#{startsAt}, expires_at=#{expiresAt}, is_active=#{active} WHERE id=#{id}
+    </update>
+    <update id="setActive">UPDATE coupons SET is_active=#{active} WHERE id=#{id}</update>
+    <delete id="deleteById">DELETE FROM coupons WHERE id=#{id}</delete>
+    <update id="incrementUsedCount">UPDATE coupons SET used_count=used_count+1 WHERE id=#{id}</update>
+</mapper>

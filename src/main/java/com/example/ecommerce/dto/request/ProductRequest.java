@@ -1,15 +1,13 @@
 package com.example.ecommerce.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-
-import java.math.BigDecimal;
+import java.util.List;
 
 public record ProductRequest(
+        Long categoryId,
+        Long brandId,
         @NotBlank String name,
         String description,
-        @NotNull @PositiveOrZero BigDecimal price,
-        @NotNull @PositiveOrZero Integer stock
+        List<@jakarta.validation.Valid ProductMediaRequest> media
 ) {
 }

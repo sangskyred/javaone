@@ -15,6 +15,10 @@
         WHERE id = #{id}
     </select>
 
+    <select id="findRoles" resultType="string">
+        SELECT r.name FROM roles r JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = #{userId}
+    </select>
+
     <insert id="insert" parameterType="com.example.ecommerce.entity.UserAccount"
             useGeneratedKeys="true" keyProperty="id">
         INSERT INTO users (email, password_hash, full_name)

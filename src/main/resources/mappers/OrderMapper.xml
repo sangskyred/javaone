@@ -3,32 +3,71 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.ecommerce.repository.OrderRepository">
+    <resultMap id="PurchaseOrderMap" type="com.example.ecommerce.entity.PurchaseOrder">
+        <id property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="subtotal" column="subtotal"/>
+        <result property="discountAmount" column="discount_amount"/>
+        <result property="shippingFee" column="shipping_fee"/>
+        <result property="total" column="total"/>
+        <result property="status" column="status"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <resultMap id="OrderLineMap" type="com.example.ecommerce.entity.OrderLine">
+        <result property="variantId" column="variant_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="quantity" column="quantity"/>
+    </resultMap>
+
     <insert id="insert" parameterType="com.example.ecommerce.entity.PurchaseOrder"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO orders (user_id, total, status)
-        VALUES (#{userId}, #{total}, #{status})
+        INSERT INTO orders (user_id, subtotal, discount_amount, shipping_fee, total, status)
+        VALUES (#{userId}, #{subtotal}, #{discountAmount}, #{shippingFee}, #{total}, #{status})
     </insert>
 
     <insert id="insertLine">
-        INSERT INTO order_items (order_id, product_id, product_name, unit_price, quantity)
-        VALUES (#{orderId}, #{productId}, #{productName}, #{unitPrice}, #{quantity})
+        INSERT INTO order_items (order_id, variant_id, product_name, unit_price, quantity)
+        VALUES (#{orderId}, #{variantId}, #{productName}, #{unitPrice}, #{quantity})
     </insert>
 
-    <select id="findByUserId" parameterType="long" resultType="com.example.ecommerce.entity.PurchaseOrder">
+    <select id="findByUserId" parameterType="long" resultMap="PurchaseOrderMap">
         SELECT id, user_id, total, status, created_at
         FROM orders
         WHERE user_id = #{userId}
         ORDER BY id DESC
     </select>
 
-    <select id="findByIdAndUserId" resultType="com.example.ecommerce.entity.PurchaseOrder">
+    <select id="findByUserAndStatus" resultMap="PurchaseOrderMap">
+        SELECT id, user_id, total, status, created_at
+        FROM orders
+        WHERE user_id = #{userId}
+        <if test="status != null and status != ''">AND status = #{status}</if>
+        ORDER BY id DESC LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByUserAndStatus" resultType="long">
+        SELECT COUNT(*) FROM orders WHERE user_id = #{userId}
+        <if test="status != null and status != ''">AND status = #{status}</if>
+    </select>
+
+    <update id="updateStatus">
+        UPDATE orders SET status = #{status}, updated_at = CURRENT_TIMESTAMP WHERE id = #{orderId}
+    </update>
+
+    <select id="findById" resultMap="PurchaseOrderMap">
+        SELECT id, user_id, total, status, created_at FROM orders WHERE id = #{orderId}
+    </select>
+
+    <select id="findByIdAndUserId" resultMap="PurchaseOrderMap">
         SELECT id, user_id, total, status, created_at
         FROM orders
         WHERE id = #{orderId} AND user_id = #{userId}
     </select>
 
-    <select id="findLines" parameterType="long" resultType="com.example.ecommerce.entity.OrderLine">
-        SELECT product_id, product_name, unit_price, quantity
+    <select id="findLines" parameterType="long" resultMap="OrderLineMap">
+        SELECT variant_id, product_name, unit_price, quantity
         FROM order_items
         WHERE order_id = #{orderId}
         ORDER BY id

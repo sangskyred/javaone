@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.repository.StockMovementRepository">
+    <resultMap id="StockMovementMap" type="com.example.ecommerce.entity.StockMovement">
+        <id property="id" column="id"/>
+        <result property="variantId" column="variant_id"/>
+        <result property="changeAmount" column="change_amount"/>
+        <result property="reason" column="reason"/>
+        <result property="referenceId" column="reference_id"/>
+        <result property="note" column="note"/>
+        <result property="createdAt" column="created_at"/>
+    </resultMap>
+
+    <sql id="movementFilter">
+        <where>
+            <if test="variantId != null">variant_id = #{variantId}</if>
+            <if test="reason != null and reason != ''">AND reason = #{reason}</if>
+        </where>
+    </sql>
+
+    <select id="search" resultMap="StockMovementMap">
+        SELECT id, variant_id, change_amount, reason, reference_id, note, created_at
+        FROM stock_movements <include refid="movementFilter"/> ORDER BY id DESC LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countSearch" resultType="long">
+        SELECT COUNT(*) FROM stock_movements <include refid="movementFilter"/> 
+    </select>
+
+    <insert id="insert" parameterType="com.example.ecommerce.entity.StockMovement"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO stock_movements (variant_id, change_amount, reason, reference_id, note)
+        VALUES (#{variantId}, #{changeAmount}, #{reason}, #{referenceId}, #{note})
+    </insert>
+</mapper>

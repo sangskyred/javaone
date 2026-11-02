@@ -10,11 +10,17 @@ import java.util.List;
 public interface CartRepository {
     List<CartLine> findByUserId(Long userId);
 
-    Integer findQuantity(@Param("userId") Long userId, @Param("productId") Long productId);
+    Integer findQuantity(@Param("userId") Long userId, @Param("variantId") Long variantId);
 
-    int insert(@Param("userId") Long userId, @Param("productId") Long productId, @Param("quantity") Integer quantity);
+    CartLine findByIdAndUserId(@Param("cartItemId") Long cartItemId, @Param("userId") Long userId);
 
-    int updateQuantity(@Param("userId") Long userId, @Param("productId") Long productId, @Param("quantity") Integer quantity);
+    int updateQuantityById(@Param("cartItemId") Long cartItemId, @Param("userId") Long userId, @Param("quantity") Integer quantity);
+
+    int deleteByIdAndUserId(@Param("cartItemId") Long cartItemId, @Param("userId") Long userId);
+
+    int insert(@Param("userId") Long userId, @Param("variantId") Long variantId, @Param("quantity") Integer quantity);
+
+    int updateQuantity(@Param("userId") Long userId, @Param("variantId") Long variantId, @Param("quantity") Integer quantity);
 
     int deleteItem(@Param("userId") Long userId, @Param("productId") Long productId);
 

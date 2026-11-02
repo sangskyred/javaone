@@ -21,7 +21,12 @@ public class EcommerceUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        if (account.getRoles() == null || account.getRoles().isEmpty()) {
+            return List.of(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+        return account.getRoles().stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role.trim().toUpperCase()))
+                .toList();
     }
 
     @Override

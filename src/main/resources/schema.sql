@@ -6,7 +6,7 @@
 --   - products không còn price/stock (đã chuyển xuống product_variants)
 --   - cart_items, order_items, stock_reservations, stock_movements
 --     tham chiếu theo variant_id
---   - TIMESTAMP -> TIMESTAMPTZ toàn bộ
+--   - TIMESTAMP -> TIMESTAMP WITH TIME ZONE toàn bộ
 --   - currency FK tới currencies, default 'VND'
 --   - sku chỉ unique trong số bản ghi chưa soft-delete
 
@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS currencies (
     code          CHAR(3) PRIMARY KEY,
     name          VARCHAR(50) NOT NULL,
     exchange_rate DECIMAL(20, 8) NOT NULL DEFAULT 1,
-    updated_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 2. BRANDS ----------------------------------------------------
@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS brands (
     description VARCHAR(1000),
     country     VARCHAR(100),
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 3. CATEGORIES ------------------------------------------------
@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS categories (
     slug        VARCHAR(120) NOT NULL UNIQUE,
     description VARCHAR(500),
     parent_id   BIGINT,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_category_parent FOREIGN KEY (parent_id)
         REFERENCES categories (id) ON DELETE SET NULL
 );
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS suppliers (
     contact_phone VARCHAR(30),
     address       VARCHAR(500),
     is_active     BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 5. PRODUCTS --------------------------------------------------
@@ -60,9 +60,9 @@ CREATE TABLE IF NOT EXISTS products (
     brand_id    BIGINT,
     name        VARCHAR(200) NOT NULL,
     description VARCHAR(2000),
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at  TIMESTAMPTZ,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_product_category FOREIGN KEY (category_id)
         REFERENCES categories (id) ON DELETE SET NULL,
     CONSTRAINT fk_product_brand FOREIGN KEY (brand_id)
@@ -79,9 +79,9 @@ CREATE TABLE IF NOT EXISTS product_variants (
     price       DECIMAL(12, 2) NOT NULL CHECK (price >= 0),
     stock       INTEGER NOT NULL DEFAULT 0 CHECK (stock >= 0),
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    deleted_at  TIMESTAMPTZ,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at  TIMESTAMP WITH TIME ZONE,
     CONSTRAINT fk_variant_product FOREIGN KEY (product_id)
         REFERENCES products (id) ON DELETE CASCADE
 );
@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS users (
     email         VARCHAR(320) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     full_name     VARCHAR(200) NOT NULL,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 9. ADDRESSES -------------------------------------------------
@@ -120,7 +120,7 @@ CREATE TABLE IF NOT EXISTS addresses (
     postal_code    VARCHAR(20),
     country_code   CHAR(2) NOT NULL DEFAULT 'VN',
     is_default     BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at     TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_address_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE
 );
@@ -148,9 +148,9 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id    BIGINT NOT NULL,
     token_hash VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMPTZ NOT NULL,
-    revoked_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    revoked_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_rt_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE
 );
@@ -160,9 +160,9 @@ CREATE TABLE IF NOT EXISTS email_verification_tokens (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id    BIGINT NOT NULL,
     token_hash VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMPTZ NOT NULL,
-    used_at    TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    used_at    TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_evt_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE
 );
@@ -172,9 +172,9 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id    BIGINT NOT NULL,
     token_hash VARCHAR(255) NOT NULL UNIQUE,
-    expires_at TIMESTAMPTZ NOT NULL,
-    used_at    TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    used_at    TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_prt_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE
 );
@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS cart_items (
     user_id    BIGINT NOT NULL,
     variant_id BIGINT NOT NULL,
     quantity   INTEGER NOT NULL CHECK (quantity > 0),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_cart_user_variant UNIQUE (user_id, variant_id),
     CONSTRAINT fk_cart_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE,
@@ -202,10 +202,10 @@ CREATE TABLE IF NOT EXISTS coupons (
     max_uses         INTEGER,
     used_count       INTEGER NOT NULL DEFAULT 0,
     min_order_amount DECIMAL(12, 2) NOT NULL DEFAULT 0,
-    starts_at        TIMESTAMPTZ NOT NULL,
-    expires_at       TIMESTAMPTZ,
+    starts_at        TIMESTAMP WITH TIME ZONE NOT NULL,
+    expires_at       TIMESTAMP WITH TIME ZONE,
     is_active        BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at       TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 17. ORDERS ---------------------------------------------------
@@ -221,8 +221,8 @@ CREATE TABLE IF NOT EXISTS orders (
     currency            CHAR(3) NOT NULL DEFAULT 'VND',
     status              VARCHAR(30) NOT NULL DEFAULT 'pending'
                         CHECK (status IN ('pending', 'paid', 'shipped', 'delivered', 'cancelled')),
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_order_user FOREIGN KEY (user_id) REFERENCES users (id),
     CONSTRAINT fk_order_address FOREIGN KEY (shipping_address_id)
         REFERENCES addresses (id) ON DELETE SET NULL,
@@ -254,9 +254,9 @@ CREATE TABLE IF NOT EXISTS stock_reservations (
     order_id    BIGINT NOT NULL,
     variant_id  BIGINT NOT NULL,
     quantity    INTEGER NOT NULL CHECK (quantity > 0),
-    expires_at  TIMESTAMPTZ NOT NULL,
-    released_at TIMESTAMPTZ,
-    created_at  TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    expires_at  TIMESTAMP WITH TIME ZONE NOT NULL,
+    released_at TIMESTAMP WITH TIME ZONE,
+    created_at  TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_sr_order FOREIGN KEY (order_id)
         REFERENCES orders (id) ON DELETE CASCADE,
     CONSTRAINT fk_sr_variant FOREIGN KEY (variant_id)
@@ -273,7 +273,7 @@ CREATE TABLE IF NOT EXISTS stock_movements (
                                     'reservation', 'release', 'damage')),
     reference_id  BIGINT,
     note          VARCHAR(500),
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_sm_variant FOREIGN KEY (variant_id)
         REFERENCES product_variants (id) ON DELETE CASCADE
 );
@@ -290,9 +290,9 @@ CREATE TABLE IF NOT EXISTS payments (
     status                 VARCHAR(30) NOT NULL DEFAULT 'pending'
                            CHECK (status IN ('pending', 'succeeded', 'failed', 'refunded')),
     gateway_transaction_id VARCHAR(255),
-    paid_at                TIMESTAMPTZ,
-    refunded_at            TIMESTAMPTZ,
-    created_at             TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    paid_at                TIMESTAMP WITH TIME ZONE,
+    refunded_at            TIMESTAMP WITH TIME ZONE,
+    created_at             TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_payment_order FOREIGN KEY (order_id) REFERENCES orders (id),
     CONSTRAINT fk_payment_currency FOREIGN KEY (currency)
         REFERENCES currencies (code)
@@ -308,9 +308,9 @@ CREATE TABLE IF NOT EXISTS shipments (
     status          VARCHAR(30) NOT NULL DEFAULT 'preparing'
                     CHECK (status IN ('preparing', 'shipping', 'delivered',
                                       'failed', 'returned')),
-    shipped_at      TIMESTAMPTZ,
-    delivered_at    TIMESTAMPTZ,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    shipped_at      TIMESTAMP WITH TIME ZONE,
+    delivered_at    TIMESTAMP WITH TIME ZONE,
+    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_shipment_order FOREIGN KEY (order_id) REFERENCES orders (id),
     CONSTRAINT fk_shipment_address FOREIGN KEY (address_id)
         REFERENCES addresses (id) ON DELETE SET NULL
@@ -323,7 +323,7 @@ CREATE TABLE IF NOT EXISTS coupon_redemptions (
     user_id         BIGINT NOT NULL,
     order_id        BIGINT NOT NULL,
     discount_amount DECIMAL(12, 2) NOT NULL CHECK (discount_amount >= 0),
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_cr_coupon FOREIGN KEY (coupon_id)
         REFERENCES coupons (id) ON DELETE CASCADE,
     CONSTRAINT fk_cr_user FOREIGN KEY (user_id) REFERENCES users (id),
@@ -341,7 +341,7 @@ CREATE TABLE IF NOT EXISTS reviews (
     title         VARCHAR(200),
     content       VARCHAR(2000),
     is_approved   BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_review_product FOREIGN KEY (product_id)
         REFERENCES products (id) ON DELETE CASCADE,
     CONSTRAINT fk_review_user FOREIGN KEY (user_id)
@@ -355,7 +355,7 @@ CREATE TABLE IF NOT EXISTS reviews (
 CREATE TABLE IF NOT EXISTS wishlists (
     user_id    BIGINT NOT NULL,
     product_id BIGINT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id, product_id),
     CONSTRAINT fk_wl_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE,
@@ -371,7 +371,7 @@ CREATE TABLE IF NOT EXISTS notifications (
     title      VARCHAR(200) NOT NULL,
     body       VARCHAR(2000),
     is_read    BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_notif_user FOREIGN KEY (user_id)
         REFERENCES users (id) ON DELETE CASCADE
 );
@@ -385,11 +385,26 @@ CREATE TABLE IF NOT EXISTS audit_logs (
     entity_id     BIGINT NOT NULL,
     old_values    JSONB,
     new_values    JSONB,
-    ip_address    INET,
-    created_at    TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    ip_address    VARCHAR(45),
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_audit_actor FOREIGN KEY (actor_user_id)
         REFERENCES users (id) ON DELETE SET NULL
 );
+
+CREATE TABLE IF NOT EXISTS product_media (
+    id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    product_id    BIGINT NOT NULL,
+    variant_id    BIGINT,
+    media_type    VARCHAR(20) NOT NULL CHECK (media_type IN ('image', 'video')),
+    url           VARCHAR(500) NOT NULL,
+    thumbnail_url VARCHAR(500),
+    sort_order    INTEGER NOT NULL DEFAULT 0,
+    is_main       BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at    TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_media_product FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+    CONSTRAINT fk_media_variant FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE CASCADE
+);
+CREATE INDEX IF NOT EXISTS idx_media_product_variant ON product_media(product_id, variant_id);
 
 -- ================================================================
 -- DỮ LIỆU GỐC
@@ -445,3 +460,4 @@ CREATE INDEX IF NOT EXISTS idx_notif_user_unread ON notifications(user_id) WHERE
 CREATE INDEX IF NOT EXISTS idx_audit_entity ON audit_logs(entity_type, entity_id);
 CREATE INDEX IF NOT EXISTS idx_audit_actor ON audit_logs(actor_user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_created_at ON audit_logs(created_at);
+

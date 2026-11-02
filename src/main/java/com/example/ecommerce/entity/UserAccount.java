@@ -1,10 +1,13 @@
 package com.example.ecommerce.entity;
 
+import java.util.List;
+
 public class UserAccount {
     private Long id;
     private String email;
     private String passwordHash;
     private String fullName;
+    private List<String> roles;
 
     public Long getId() {
         return id;
@@ -37,4 +40,7 @@ public class UserAccount {
     public void setFullName(String fullName) {
         this.fullName = fullName;
     }
+
+    public List<String> getRoles() { return roles; }
+    public void setRoles(List<String> roles) { this.roles = roles; }
 }

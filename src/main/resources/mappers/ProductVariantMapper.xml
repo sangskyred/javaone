@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.ecommerce.repository.ProductVariantRepository">
+    <resultMap id="ProductVariantMap" type="com.example.ecommerce.entity.ProductVariant">
+        <id property="id" column="id"/>
+        <result property="productId" column="product_id"/>
+        <result property="sku" column="sku"/>
+        <result property="name" column="name"/>
+        <result property="attributes" column="attributes" typeHandler="com.example.ecommerce.config.JsonMapTypeHandler"/>
+        <result property="price" column="price"/>
+        <result property="stock" column="stock"/>
+        <result property="active" column="active"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="deletedAt" column="deleted_at"/>
+        <collection property="mediaList" column="id"
+                    select="com.example.ecommerce.repository.ProductMediaRepository.findByVariantId"/>
+    </resultMap>
+
+    <select id="findByProductId" resultMap="ProductVariantMap">
+        SELECT id, product_id, sku, name, attributes, price, stock, is_active AS active,
+               created_at, updated_at, deleted_at
+        FROM product_variants
+        WHERE product_id = #{productId} AND deleted_at IS NULL
+        ORDER BY id
+    </select>
+
+    <select id="findDefaultByProductId" resultMap="ProductVariantMap">
+        SELECT id, product_id, sku, name, attributes, price, stock, is_active AS active,
+               created_at, updated_at, deleted_at
+        FROM product_variants
+        WHERE product_id = #{productId} AND deleted_at IS NULL
+        ORDER BY id LIMIT 1
+    </select>
+
+    <select id="findById" resultMap="ProductVariantMap">
+        SELECT id, product_id, sku, name, attributes, price, stock, is_active AS active,
+               created_at, updated_at, deleted_at
+        FROM product_variants
+        WHERE id = #{id} AND deleted_at IS NULL
+    </select>
+
+    <insert id="insert" parameterType="com.example.ecommerce.entity.ProductVariant"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product_variants (product_id, sku, name, attributes, price, stock, is_active)
+        VALUES (#{productId}, #{sku}, #{name}, #{attributes,typeHandler=com.example.ecommerce.config.JsonMapTypeHandler}, #{price}, #{stock}, #{active})
+    </insert>
+
+    <update id="update" parameterType="com.example.ecommerce.entity.ProductVariant">
+        UPDATE product_variants
+        SET sku = #{sku}, name = #{name},
+            attributes = #{attributes,typeHandler=com.example.ecommerce.config.JsonMapTypeHandler},
+            price = #{price}, stock = #{stock}, is_active = #{active}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id} AND deleted_at IS NULL
+    </update>
+
+    <update id="deleteById">
+        UPDATE product_variants SET deleted_at = CURRENT_TIMESTAMP WHERE id = #{id} AND deleted_at IS NULL
+    </update>
+
+    <update id="decrementStock">
+        UPDATE product_variants
+        SET stock = stock - #{quantity}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{variantId} AND deleted_at IS NULL AND is_active = TRUE AND stock >= #{quantity}
+    </update>
+
+    <update id="incrementStock">
+        UPDATE product_variants
+        SET stock = stock + #{quantity}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{variantId} AND deleted_at IS NULL
+    </update>
+</mapper>
+
+

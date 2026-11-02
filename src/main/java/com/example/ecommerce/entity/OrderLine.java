@@ -1,19 +1,28 @@
 package com.example.ecommerce.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class OrderLine {
-    private Long productId;
+    private Long variantId;
     private String productName;
     private BigDecimal unitPrice;
     private Integer quantity;
 
-    public Long getProductId() {
-        return productId;
+    public Long getVariantId() {
+        return variantId;
     }
 
-    public void setProductId(Long productId) {
-        this.productId = productId;
+    public void setVariantId(Long variantId) {
+        this.variantId = variantId;
     }
 
     public String getProductName() {

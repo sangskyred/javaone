@@ -3,37 +3,69 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.ecommerce.repository.ProductRepository">
-    <select id="findAll" resultType="com.example.ecommerce.entity.Product">
-        SELECT id, name, description, price, stock
+    <resultMap id="ProductMap" type="com.example.ecommerce.entity.Product">
+        <id property="id" column="id"/>
+        <result property="categoryId" column="category_id"/>
+        <result property="brandId" column="brand_id"/>
+        <result property="name" column="name"/>
+        <result property="description" column="description"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="deletedAt" column="deleted_at"/>
+        <collection property="mediaList" column="id"
+                    select="com.example.ecommerce.repository.ProductMediaRepository.findByProductId"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="ProductMap">
+        SELECT id, category_id, brand_id, name, description, created_at, updated_at, deleted_at
         FROM products
+        WHERE deleted_at IS NULL
         ORDER BY id
     </select>
 
-    <select id="findById" parameterType="long" resultType="com.example.ecommerce.entity.Product">
-        SELECT id, name, description, price, stock
+    <sql id="searchFilter">
+        WHERE deleted_at IS NULL
+        <if test="keyword != null and keyword != ''">
+            AND LOWER(name) LIKE LOWER(CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="categoryId != null">AND category_id = #{categoryId}</if>
+        <if test="brandId != null">AND brand_id = #{brandId}</if>
+    </sql>
+
+    <select id="search" resultMap="ProductMap">
+        SELECT id, category_id, brand_id, name, description, created_at, updated_at, deleted_at
         FROM products
-        WHERE id = #{id}
+        <include refid="searchFilter"/>
+        ORDER BY id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countSearch" resultType="long">
+        SELECT COUNT(*) FROM products
+        <include refid="searchFilter"/>
+    </select>
+
+    <select id="findById" parameterType="long" resultMap="ProductMap">
+        SELECT id, category_id, brand_id, name, description, created_at, updated_at, deleted_at
+        FROM products
+        WHERE id = #{id} AND deleted_at IS NULL
     </select>
 
     <insert id="insert" parameterType="com.example.ecommerce.entity.Product"
             useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO products (name, description, price, stock)
-        VALUES (#{name}, #{description}, #{price}, #{stock})
+        INSERT INTO products (category_id, brand_id, name, description)
+        VALUES (#{categoryId}, #{brandId}, #{name}, #{description})
     </insert>
 
     <update id="update" parameterType="com.example.ecommerce.entity.Product">
         UPDATE products
-        SET name = #{name}, description = #{description}, price = #{price}, stock = #{stock}
-        WHERE id = #{id}
+        SET category_id = #{categoryId}, brand_id = #{brandId}, name = #{name},
+            description = #{description}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id} AND deleted_at IS NULL
     </update>
 
-    <delete id="deleteById" parameterType="long">
-        DELETE FROM products WHERE id = #{id}
-    </delete>
-
-    <update id="decrementStock">
-        UPDATE products
-        SET stock = stock - #{quantity}
-        WHERE id = #{productId} AND stock &gt;= #{quantity}
+    <update id="deleteById" parameterType="long">
+        UPDATE products SET deleted_at = CURRENT_TIMESTAMP WHERE id = #{id} AND deleted_at IS NULL
     </update>
+
 </mapper>

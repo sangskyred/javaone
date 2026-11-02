@@ -3,32 +3,63 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.ecommerce.repository.CartRepository">
-    <select id="findByUserId" parameterType="long" resultType="com.example.ecommerce.entity.CartLine">
-        SELECT c.product_id, p.name AS product_name, p.price AS unit_price, c.quantity,
-               p.price * c.quantity AS line_total
+    <resultMap id="CartLineMap" type="com.example.ecommerce.entity.CartLine">
+        <id property="cartItemId" column="cart_item_id"/>
+        <result property="productId" column="product_id"/>
+        <result property="variantId" column="variant_id"/>
+        <result property="productName" column="product_name"/>
+        <result property="unitPrice" column="unit_price"/>
+        <result property="quantity" column="quantity"/>
+        <result property="lineTotal" column="line_total"/>
+    </resultMap>
+
+    <select id="findByUserId" parameterType="long" resultMap="CartLineMap">
+        SELECT c.id AS cart_item_id, v.product_id, v.id AS variant_id, p.name AS product_name, v.price AS unit_price, c.quantity,
+               v.price * c.quantity AS line_total
         FROM cart_items c
-        JOIN products p ON p.id = c.product_id
+        JOIN product_variants v ON v.id = c.variant_id
+        JOIN products p ON p.id = v.product_id
         WHERE c.user_id = #{userId}
         ORDER BY c.id
     </select>
 
+    <select id="findByIdAndUserId" resultMap="CartLineMap">
+        SELECT c.id AS cart_item_id, v.product_id, v.id AS variant_id, p.name AS product_name,
+               v.price AS unit_price, c.quantity, v.price * c.quantity AS line_total
+        FROM cart_items c
+        JOIN product_variants v ON v.id = c.variant_id
+        JOIN products p ON p.id = v.product_id
+        WHERE c.id = #{cartItemId} AND c.user_id = #{userId}
+    </select>
+
+    <update id="updateQuantityById">
+        UPDATE cart_items SET quantity = #{quantity}
+        WHERE id = #{cartItemId} AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM cart_items WHERE id = #{cartItemId} AND user_id = #{userId}
+    </delete>
+
     <select id="findQuantity" resultType="int">
-        SELECT quantity FROM cart_items WHERE user_id = #{userId} AND product_id = #{productId}
+        SELECT quantity FROM cart_items WHERE user_id = #{userId} AND variant_id = #{variantId}
     </select>
 
     <insert id="insert">
-        INSERT INTO cart_items (user_id, product_id, quantity)
-        VALUES (#{userId}, #{productId}, #{quantity})
+        INSERT INTO cart_items (user_id, variant_id, quantity)
+        VALUES (#{userId}, #{variantId}, #{quantity})
     </insert>
 
     <update id="updateQuantity">
         UPDATE cart_items
         SET quantity = #{quantity}
-        WHERE user_id = #{userId} AND product_id = #{productId}
+        WHERE user_id = #{userId} AND variant_id = #{variantId}
     </update>
 
     <delete id="deleteItem">
-        DELETE FROM cart_items WHERE user_id = #{userId} AND product_id = #{productId}
+        DELETE FROM cart_items WHERE user_id = #{userId} AND variant_id IN (
+            SELECT id FROM product_variants WHERE product_id = #{productId}
+        )
     </delete>
 
     <delete id="clear" parameterType="long">

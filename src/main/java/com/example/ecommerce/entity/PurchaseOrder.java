@@ -1,14 +1,26 @@
 package com.example.ecommerce.entity;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.OffsetDateTime;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class PurchaseOrder {
     private Long id;
     private Long userId;
+    private BigDecimal subtotal;
+    private BigDecimal discountAmount;
+    private BigDecimal shippingFee;
     private BigDecimal total;
     private String status;
-    private LocalDateTime createdAt;
+    private OffsetDateTime createdAt;
 
     public Long getId() {
         return id;
@@ -42,11 +54,11 @@ public class PurchaseOrder {
         this.status = status;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public OffsetDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(OffsetDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }

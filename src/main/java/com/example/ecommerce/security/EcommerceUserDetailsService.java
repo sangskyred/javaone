@@ -21,6 +21,7 @@ public class EcommerceUserDetailsService implements UserDetailsService {
         if (account == null) {
             throw new UsernameNotFoundException("Account was not found");
         }
+        account.setRoles(userRepository.findRoles(account.getId()));
         return new EcommerceUserDetails(account);
     }
 }

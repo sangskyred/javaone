@@ -1,9 +1,20 @@
 package com.example.ecommerce.entity;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CartLine {
+    private Long cartItemId;
     private Long productId;
+    private Long variantId;
     private String productName;
     private BigDecimal unitPrice;
     private Integer quantity;
@@ -16,6 +27,9 @@ public class CartLine {
     public void setProductId(Long productId) {
         this.productId = productId;
     }
+
+    public Long getVariantId() { return variantId; }
+    public void setVariantId(Long variantId) { this.variantId = variantId; }
 
     public String getProductName() {
         return productName;

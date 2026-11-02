@@ -12,7 +12,7 @@ import java.util.List;
 public class OrderMapper {
     public OrderResponse toResponse(PurchaseOrder order, List<OrderLine> lines) {
         List<OrderItemResponse> items = lines.stream()
-                .map(line -> new OrderItemResponse(line.getProductId(), line.getProductName(),
+                .map(line -> new OrderItemResponse(line.getVariantId(), line.getProductName(),
                         line.getUnitPrice(), line.getQuantity()))
                 .toList();
         return new OrderResponse(order.getId(), order.getTotal(), order.getStatus(), order.getCreatedAt(), items);
